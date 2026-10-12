@@ -1,0 +1,33 @@
+---
+title: "Gamma Ray Sensor"
+subtitle: "Protocols, guidelines and documentation of Gamma Ray Sensor"
+author: Xyza Vasily Dela Pena
+date: last-modified
+---
+
+TEST LINE
+
+## Why tidyverse and tidymodels
+
+text here
+
+## How this course teaches
+
+Text here
+
+## The course
+
+1. [Getting set up](0-getting-setup.qmd): install R, Positron, and the packages this course uses.
+2. [The full pipeline](1-full-pipeline.qmd): load, preprocess, tune, test, and predict, once, end to end, before any of it gets explained.
+3. [Loading spectral data](2-loading-data.qmd): read a folder of OPUS files and a wet chemistry CSV into one tibble.
+4. [Exploratory data analysis](3-eda.qmd): look at the spectra and the soil properties before modelling anything.
+5. [Feature engineering](4-feature-engineering.qmd): build a `recipes` pipeline out of resampling, SNV, and Savitzky-Golay steps.
+6. [Outlier detection](5-outlier-detection.qmd): use PCA on the preprocessed spectra to find samples a model shouldn't trust.
+7. [Evaluating performance](6-evaluating-performance.qmd): split the data, fit a model, and score it with tidymodels.
+8. [Preparing a model for inference](7-preparing-for-inference.qmd): save a fitted model, load it again, and predict new spectra.
+9. [Preparing OSSL](8-preparing-ossl.qmd): pull a working sample from the Open Soil Spectral Library.
+10. [Predicting exchangeable potassium using OSSL](9-kex-ossl-pipeline.qmd): the same pipeline, run end to end on a public, global dataset.
+
+### Going further
+
+text here

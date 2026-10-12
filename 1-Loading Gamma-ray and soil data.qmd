@@ -1,0 +1,218 @@
+---
+title: "Loading gamma-ray and soil data"
+subtitle: "Read three CSV files into three pandas tables, ready for every page that follows."
+author: "Xyza Vasily Dela Pena"
+date: last-modified
+
+This page loads the three datasets the analysis is built on. Each one is a plain CSV file in the `data/` folder, and each ends up as one pandas table (a DataFrame).
+
+| Dataset | Site | What it is | Rows |
+|---|---|---|---|
+| HOAL | Petzenkirchen, Austria | Reference soil samples with lab-measured sand, silt and clay, plus gamma-ray values | 13 |
+| Raasdorf_2024 | Raasdorf, Austria | Point measurements at 19 spots, taken in 2024, with texture and gamma-ray values | 19 |
+| Raasdorf_2026 | Raasdorf, Austria | The continuous gamma-ray survey, taken on 22 July 2026, one row per measured spectrum | 2,019 |
+
+::: {.callout-note}
+## What you will have at the end
+- Python installed
+- An editor (Positron or VS Code) that can run notebooks
+- A clean, project-only Python environment
+- A notebook that runs without errors
+:::
+
+## Install Python
+
+Download Python 3.10 or later from [python.org](https://www.python.org/downloads/) and run the installer.
+
+::: {.callout-warning}
+## Windows users
+On the first screen of the installer, tick **Add python.exe to PATH**. If you forget, your terminal won't find Python and the next steps will fail.
+:::
+
+To check it worked, open a terminal and run:
+
+```{.bash filename="Terminal"}
+python --version
+```
+
+You should see something like `Python 3.12.x`. On macOS and Linux, the command may be `python3` instead of `python`. If so, use `python3` everywhere in this guide.
+
+::: {.callout-tip}
+## Linux (Debian / Ubuntu)
+You also need the tool that creates virtual environments:
+
+```{.bash filename="Terminal"}
+sudo apt install python3-venv
+```
+:::
+
+## Install an editor
+
+You need somewhere to open the notebook and run the code. Pick one. Both are free and both work well.
+
+### Option 1: Positron (recommended)
+
+Download [Positron](https://positron.posit.co) and install it. It is built for data science: you see your code, your plots, and your variables all in one window, and it runs Python and R side by side.
+
+Once it is installed, open it and check that it found Python: look at the interpreter picker in the bottom status bar. If you don't see your Python version there, click the picker and choose it from the list.
+
+### Option 2: Visual Studio Code
+
+If you already use [VS Code](https://code.visualstudio.com), you can stay with it. Positron is built on the same foundation, so it will feel familiar. Install these two extensions from the Extensions panel:
+
+- **Python** (by Microsoft)
+- **Jupyter** (by Microsoft)
+
+Without the Jupyter extension, VS Code can't open `.ipynb` notebooks.
+
+## Get the project files
+
+Go to the [project repository](https://github.com/your-username/your-repo) on GitHub, click **Code** -> **Download ZIP**, and unzip it.
+
+If you already use git, you can clone it instead:
+
+
+```{.bash filename="Terminal"}
+git clone https://github.com/your-username/your-repo.git
+```
+The folder contains the notebook (`soil_texture_raasdorf.ipynb`) and a file called `requirements.txt`. That file is the list of packages we use.
+
+## Open the project folder
+
+Open the whole project folder in your editor, not just the notebook file.
+
+- **Positron or VS Code**: `File` -> `Open Folder…`, then choose the project folder.
+
+This matters because the next step creates the environment *inside* this folder, and the editor needs to be looking at the same place.
+
+## Create your environment
+
+Think of a virtual environment as a clean lab bench just for this project. The packages you install on it stay on it, so they never clash with other Python projects on your computer.
+
+Open a terminal inside your editor (`Terminal` -> `New Terminal`). It opens in the project folder already.
+
+**Step 1.** Create the environment. This makes a hidden folder called `.venv`:
+
+```{.bash filename="Terminal"}
+python -m venv .venv
+```
+
+**Step 2.** Switch it on:
+
+::: {.panel-tabset}
+
+## Windows
+
+```{.bash filename="Terminal"}
+.venv\Scripts\activate
+```
+
+## macOS / Linux
+
+```{.bash filename="Terminal"}
+source .venv/bin/activate
+```
+
+:::
+
+You should now see `(.venv)` at the start of your terminal line. That means the bench is ready.
+
+::: {.callout-tip}
+## Windows PowerShell says "running scripts is disabled"?
+Run this once, then try the activate command again:
+
+```{.bash filename="Terminal"}
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+```
+:::
+
+## Install the packages
+
+With `(.venv)` showing, run:
+
+```{.bash filename="Terminal"}
+pip install -r requirements.txt
+```
+
+This reads `requirements.txt` and installs everything the notebook needs. It can take a few minutes the first time.
+
+Here is what is in that file and why:
+
+| Package | What we use it for |
+|---|---|
+| `numpy` | Numbers and arrays, plus the permutation tests |
+| `pandas` | Reading the CSV files and working with tables |
+| `matplotlib` | Every figure in the analysis |
+| `scipy` | Linear regressions and nearest-neighbour matching of GPS points |
+| `statsmodels` | Multiple regression, VIF, and ANCOVA |
+| `ipykernel` | Lets your editor run the notebook with this environment |
+
+If you would rather install them by hand, this does the same thing:
+
+```{.bash filename="Terminal"}
+pip install numpy pandas matplotlib scipy statsmodels ipykernel
+```
+
+## Tell the notebook which Python to use
+
+Open `soil_texture_raasdorf.ipynb`. In the top-right corner, click the kernel (or interpreter) picker and choose the one that points to `.venv`.
+
+If you don't see it, close the notebook, restart the editor, and try again. The `.venv` environment appears once the editor has noticed the folder.
+
+## Point the notebook to your data
+
+The notebook reads three CSV files from a folder. In the early setup cell you will find a line like this:
+
+```{.python filename="Notebook"}
+BASE_DIR = r"E:\Gamma Ray Sensor\Raasdorf_July 22, 2026\Soil_Texture"
+```
+
+Change it to the folder where **your** copies of the files live:
+
+- `Soil_data_HOAL.csv`
+- `Trial.csv`
+- `concentrations_NNLS_output.csv`
+
+## Check everything works
+
+Run this in a notebook cell:
+
+```{python}
+#| eval: false
+
+import numpy as np
+import pandas as pd
+import matplotlib
+import scipy
+import statsmodels
+
+for pkg in [np, pd, matplotlib, scipy, statsmodels]:
+    print(f"{pkg.__name__:12} {pkg.__version__}")
+```
+
+If you see five package names with version numbers and no errors, you are set up and ready to go.
+
+## If something goes wrong
+
+| What you see | What to try |
+|---|---|
+| `python` is not recognized | Reinstall Python and tick **Add python.exe to PATH** (Windows), or use `python3` (macOS / Linux). |
+| `ModuleNotFoundError: No module named 'pandas'` | The notebook is using the wrong Python. Pick the `.venv` kernel (see above), and check `(.venv)` shows in your terminal. |
+| `pip` is not recognized | Use `python -m pip install -r requirements.txt` instead. |
+| `FileNotFoundError` when loading data | Check that `BASE_DIR` points to the right folder and the file names match exactly. |
+
+## Cheatsheet
+
+Run these in the terminal, with the project open.
+
+| Command | What it does |
+|---|---|
+| `python -m venv .venv` | Creates the environment (once). |
+| `.venv\Scripts\activate` | Switches it on (Windows). |
+| `source .venv/bin/activate` | Switches it on (macOS / Linux). |
+| `pip install -r requirements.txt` | Installs everything the project needs. |
+| `pip list` | Shows what is installed. |
+| `pip freeze > requirements.txt` | Saves your exact package versions to the file. |
+| `deactivate` | Switches the environment off. |
+
+You only need the first three commands and `pip install -r` once. After that, you just activate the environment each time you come back.

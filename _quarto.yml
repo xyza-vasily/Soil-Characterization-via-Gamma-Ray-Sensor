@@ -1,0 +1,53 @@
+project:
+  type: website
+  render:
+    - index.qmd
+    - 0-Introduction.qmd
+website:
+  title: "Gama ray sensor"
+  description: "Protocols, guidelines and results of GRS operation in Raasdorf, Austria."
+  
+  page-footer:
+    left: "Xyza Vasily Dela Pena"
+    right: "International Atomic Energy Agency | Soil and Water and Crop Nutrition Laboratory |
+           Joint FAO/IAEA Centre of Nuclear Techniques in Food and Agriculture |
+           Department of Nuclear Sciences and Applications"
+
+  sidebar:
+    title: "GAMMA RAY SENSOR"
+    style: docked
+    contents:
+      - text: Home
+        href: index.qmd
+      - section: "Projects"
+        contents:
+          - text: "Introduction"
+            href: 0-Introduction.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    theme: [cosmo, custom.scss]
+    include-in-header:
+      - text: |
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+          <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&family=Source+Code+Pro&display=swap" rel="stylesheet">
+    toc: true
+    code-fold: false
+    code-copy: hover
+    code-block-border-left: false
+    grid:
+      sidebar-width: 300px
+      body-width: 750px
+
+jupyter: python3
+
+execute:
+  freeze: auto
+  echo: true
+  warning: false
+  message: false
+  fig-width: 6
+  fig-height: 4
