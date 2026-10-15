@@ -3,6 +3,7 @@ title: "Loading gamma-ray and soil data"
 subtitle: "Read three CSV files into three pandas tables, ready for every page that follows."
 author: "Xyza Vasily Dela Pena"
 date: last-modified
+---
 
 This page loads the three datasets the analysis is built on. Each one is a plain CSV file in the `data/` folder, and each ends up as one pandas table (a DataFrame).
 
@@ -179,12 +180,13 @@ Run this in a notebook cell:
 
 ```{python}
 #| eval: false
-
 import numpy as np
 import pandas as pd
 import matplotlib
 import scipy
 import statsmodels
+
+import scipy as stats
 
 for pkg in [np, pd, matplotlib, scipy, statsmodels]:
     print(f"{pkg.__name__:12} {pkg.__version__}")

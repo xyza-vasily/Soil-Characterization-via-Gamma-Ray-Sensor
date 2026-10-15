@@ -2,27 +2,39 @@ project:
   type: website
   render:
     - index.qmd
-    - 0-Introduction.qmd
+    - 0-introduction.qmd
+    - 1-Loading-gamma-ray-and-soil-data.qmd
+    - 2-Exploratory-data-analysis.qmd
+    - 3-HOAL-to-raasdorf-2024.qmd 
+
 website:
-  title: "Gama ray sensor"
+  title: "Gamma ray sensor"
   description: "Protocols, guidelines and results of GRS operation in Raasdorf, Austria."
-  
+
   page-footer:
-    left: "Xyza Vasily Dela Pena"
-    right: "International Atomic Energy Agency | Soil and Water and Crop Nutrition Laboratory |
-           Joint FAO/IAEA Centre of Nuclear Techniques in Food and Agriculture |
-           Department of Nuclear Sciences and Applications"
+    left: "Xyza Vasily Dela Pena | 2026"
+    right: |
+      International Atomic Energy Agency<br>
+      Soil and Water and Crop Nutrition Laboratory<br>
+      Joint FAO/IAEA Centre of Nuclear Techniques in Food and Agriculture<br>
+      Department of Nuclear Sciences and Applications
 
   sidebar:
     title: "GAMMA RAY SENSOR"
     style: docked
     contents:
-      - text: Home
+      - text: "Home"
         href: index.qmd
       - section: "Projects"
         contents:
           - text: "Introduction"
-            href: 0-Introduction.qmd
+            href: 0-introduction.qmd
+          - text: "Loading Gamma-ray and soil data"
+            href: 1-Loading-gamma-ray-and-soil-data.qmd
+          - text: "Exploratory Data Analysis"
+            href: 2-Exploratory-data-analysis.qmd
+          - text: "HOAL to Raasdorf 2024"
+            href: 3-HOAL-to-raasdorf-2024.qmd
 
 bibliography: references.bib
 
@@ -40,7 +52,7 @@ format:
     code-block-border-left: false
     grid:
       sidebar-width: 300px
-      body-width: 750px
+      body-width: 1000px
 
 jupyter: python3
 
@@ -49,5 +61,5 @@ execute:
   echo: true
   warning: false
   message: false
-  fig-width: 6
+  fig-width: 4
   fig-height: 4

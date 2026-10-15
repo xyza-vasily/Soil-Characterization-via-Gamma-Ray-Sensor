@@ -9,6 +9,11 @@ h1 {
   color: #6f42c1;
 }
 
+main img {
+  max-width: 100%;
+  height: auto;
+}
+
 .nav-footer .nav-footer-right {
   display: flex;
   flex-direction: column;

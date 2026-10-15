@@ -180,6 +180,8 @@ import matplotlib
 import scipy
 import statsmodels
 
+from scipy import stats
+
 for pkg in [np, pd, matplotlib, scipy, statsmodels]:
     print(f"{pkg.__name__:12} {pkg.__version__}")
 ```

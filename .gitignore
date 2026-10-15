@@ -59,3 +59,9 @@ renv/staging/
 
 # R plots written by non-interactive sessions
 Rplots.pdf
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
