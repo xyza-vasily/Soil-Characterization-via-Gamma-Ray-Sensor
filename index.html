@@ -155,6 +155,12 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text">HOAL to Raasdorf 2024</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./3b-recalibrating-the-intercept.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Recalibrating the Intercept</span></a>
+  </div>
+</li>
       </ul>
   </li>
     </ul>
@@ -316,7 +322,7 @@ ul.task-list li input[type="checkbox"] {
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp('/' + window.location.host + '/');
+        var filterRegex = new RegExp("https:\/\/xyza-vasily\.github\.io\/Soil-Characterization-via-Gamma-Ray-Sensor\/");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }
