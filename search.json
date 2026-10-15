@@ -1,0 +1,515 @@
+[
+  {
+    "objectID": "3-HOAL-to-raasdorf-2024.html",
+    "href": "3-HOAL-to-raasdorf-2024.html",
+    "title": "A: HOAL to Raasdorf_2024",
+    "section": "",
+    "text": "This section asks one question: can a model built at HOAL predict soil texture at Raasdorf?\nThe plan has five steps:",
+    "crumbs": [
+      "Projects",
+      "HOAL to Raasdorf 2024"
+    ]
+  },
+  {
+    "objectID": "3-HOAL-to-raasdorf-2024.html#set-up",
+    "href": "3-HOAL-to-raasdorf-2024.html#set-up",
+    "title": "A: HOAL to Raasdorf_2024",
+    "section": "Set up",
+    "text": "Set up\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\nfrom scipy import stats\n\nfrom pipeline import load_data, transfer\nfrom plot_style import COLORS, LINE_COLOR, add_header\n\nhoal, raasdorf_2024, raasdorf_2026 = load_data()",
+    "crumbs": [
+      "Projects",
+      "HOAL to Raasdorf 2024"
+    ]
+  },
+  {
+    "objectID": "3-HOAL-to-raasdorf-2024.html#fit-the-hoal-models",
+    "href": "3-HOAL-to-raasdorf-2024.html#fit-the-hoal-models",
+    "title": "A: HOAL to Raasdorf_2024",
+    "section": "Fit the HOAL models",
+    "text": "Fit the HOAL models\nFor every texture class and every predictor, we fit a straight line. The table gives the slope and intercept of each line, its R² (the share of the variation in texture that the line explains) and its p-value.\n\npredictors = [\"K40\", \"U238\", \"Th232\", \"Ratio\"]\ntargets = [\"Clay\", \"Silt\", \"Sand\"]\n\nrows = []\nfor target in targets:\n    for predictor in predictors:\n        fit = stats.linregress(hoal[predictor], hoal[target])\n        rows.append({\n            \"target\": target,\n            \"predictor\": predictor,\n            \"slope\": fit.slope,\n            \"intercept\": fit.intercept,\n            \"R2\": fit.rvalue ** 2,\n            \"p\": fit.pvalue,\n        })\n\nhoal_models = pd.DataFrame(rows)\nhoal_models.round(4)\n\n\n\n\n\n\n\n\ntarget\npredictor\nslope\nintercept\nR2\np\n\n\n\n\n0\nClay\nK40\n0.1038\n-21.2741\n0.1769\n0.1524\n\n\n1\nClay\nU238\n-1.0766\n78.7350\n0.7846\n0.0001\n\n\n2\nClay\nTh232\n-1.2185\n94.3319\n0.5020\n0.0067\n\n\n3\nClay\nRatio\n-84.7186\n104.1414\n0.6220\n0.0014\n\n\n4\nSilt\nK40\n-0.1076\n116.3377\n0.1928\n0.1334\n\n\n5\nSilt\nU238\n1.0769\n14.3291\n0.7959\n0.0000\n\n\n6\nSilt\nTh232\n1.1905\n0.1606\n0.4859\n0.0081\n\n\n7\nSilt\nRatio\n86.4048\n-12.4855\n0.6560\n0.0008\n\n\n8\nSand\nK40\n0.0040\n4.8469\n0.0272\n0.5900\n\n\n9\nSand\nU238\n-0.0035\n7.0966\n0.0009\n0.9244\n\n\n10\nSand\nTh232\n0.0237\n5.7466\n0.0194\n0.6497\n\n\n11\nSand\nRatio\n-1.9062\n8.5525\n0.0321\n0.5580\n\n\n\n\n\n\n\nThe same lines, drawn on the data:\n\nfig, axes = plt.subplots(\n    len(targets), len(predictors),\n    figsize=(4 * len(predictors), 4 * len(targets)),\n    squeeze=False,\n    sharey=\"row\",           \n)\n\nfor i, target in enumerate(targets):\n    for j, predictor in enumerate(predictors):\n        ax = axes[i, j]\n        fit = stats.linregress(hoal[predictor], hoal[target])\n        x = np.linspace(hoal[predictor].min(), hoal[predictor].max(), 50)\n\n        ax.scatter(hoal[predictor], hoal[target], s=55,\n                   color=COLORS[target],\n                   edgecolor=\"white\", linewidth=0.8, zorder=3)\n        ax.plot(x, fit.intercept + fit.slope * x,\n                color=LINE_COLOR, linewidth=2, zorder=2)\n\n        add_header(ax, f\"{predictor}   y = {fit.slope:.2f}x {fit.intercept:+.1f}   R² = {fit.rvalue**2:.2f}\")\n        ax.set_xlabel(predictor if predictor == \"Ratio\" else f\"{predictor} (Bq/kg)\")\n\n    # Only the leftmost axes in this row gets the ylabel,\n    # and we don't print it on every subplot.\n    axes[i, 0].set_ylabel(f\"{target} (%)\")\n\nplt.tight_layout()\nplt.show()\n\n\n\n\n\n\n\n\nSand has no relationship with any predictor (R² close to 0). It only ranges from about 6 to 8% at HOAL, so there is almost nothing to predict. We leave sand out from here on and transfer clay and silt.",
+    "crumbs": [
+      "Projects",
+      "HOAL to Raasdorf 2024"
+    ]
+  },
+  {
+    "objectID": "3-HOAL-to-raasdorf-2024.html#choose-the-predictor",
+    "href": "3-HOAL-to-raasdorf-2024.html#choose-the-predictor",
+    "title": "A: HOAL to Raasdorf_2024",
+    "section": "Choose the predictor",
+    "text": "Choose the predictor\nWe choose the predictor using HOAL only, before looking at any Raasdorf texture value. If we picked whichever predictor works best at Raasdorf, the test would no longer be independent. Two rules:\n\nLow error at HOAL. We use leave-one-out RMSE. Each HOAL sample is left out in turn, the line is fitted on the other 12, and that line predicts the sample that was left out. The RMSE of those predictions is an honest estimate of the error on a new sample.\nRaasdorf stays inside HOAL’s range. We count how many Raasdorf_2024 isotope values fall outside the range HOAL was measured on. This uses the isotope values only, not the texture. A model has to extrapolate outside that range.\n\n\ndef loo_rmse(x, y):\n    errors = []\n    for i in range(len(x)):\n        train = np.arange(len(x)) != i\n        fit = stats.linregress(x[train], y[train])\n        errors.append(y[i] - (fit.intercept + fit.slope * x[i]))\n    return np.sqrt(np.mean(np.square(errors)))\n\nrows = []\nfor target in targets:\n    for predictor in predictors:\n        x = hoal[predictor].to_numpy()\n        y = hoal[target].to_numpy()\n        values = raasdorf_2024[predictor]\n        outside = ((values &lt; x.min()) | (values &gt; x.max())).mean() * 100\n        rows.append({\n            \"target\": target,\n            \"predictor\": predictor,\n            \"LOO RMSE\": loo_rmse(x, y),\n            \"% Raasdorf 2024 isotope outside HOAL range\": outside,\n        })\n\nselection = pd.DataFrame(rows).round(2)\nselection\n\n\n\n\n\n\n\n\ntarget\npredictor\nLOO RMSE\n% Raasdorf 2024 isotope outside HOAL range\n\n\n\n\n0\nClay\nK40\n7.88\n52.63\n\n\n1\nClay\nU238\n3.82\n5.26\n\n\n2\nClay\nTh232\n6.84\n100.00\n\n\n3\nClay\nRatio\n5.34\n52.63\n\n\n4\nSilt\nK40\n7.69\n52.63\n\n\n5\nSilt\nU238\n3.67\n5.26\n\n\n6\nSilt\nTh232\n7.03\n100.00\n\n\n7\nSilt\nRatio\n5.07\n52.63\n\n\n8\nSand\nK40\n0.87\n52.63\n\n\n9\nSand\nU238\n0.86\n5.26\n\n\n10\nSand\nTh232\n0.93\n100.00\n\n\n11\nSand\nRatio\n0.80\n52.63\n\n\n\n\n\n\n\nU238 is the choice for both clay and silt. It has the lowest error (3.82 for clay, 3.67 for silt) and only 5% of the Raasdorf_2024 values fall outside the HOAL range. Th232 is outside the range for every Raasdorf sample, and K40 and the ratio for about half, so they would have to extrapolate. The sand errors look small only because sand hardly varies.",
+    "crumbs": [
+      "Projects",
+      "HOAL to Raasdorf 2024"
+    ]
+  },
+  {
+    "objectID": "3-HOAL-to-raasdorf-2024.html#check-the-chosen-model",
+    "href": "3-HOAL-to-raasdorf-2024.html#check-the-chosen-model",
+    "title": "A: HOAL to Raasdorf_2024",
+    "section": "Check the chosen model",
+    "text": "Check the chosen model\nBefore using the lines, we check how they miss. A residual is the observed value minus the fitted value. If the line is a good description, the residuals scatter around zero with no curve and no funnel shape.\n\nfor target in [\"Clay\", \"Silt\"]:\n    fit = stats.linregress(hoal[\"U238\"], hoal[target])\n    hoal[f\"{target}_fitted\"] = fit.intercept + fit.slope * hoal[\"U238\"]\n    hoal[f\"{target}_residual\"] = hoal[target] - hoal[f\"{target}_fitted\"]\n\nfig, axes = plt.subplots(1, 2, figsize=(9, 4))\nfor ax, target in zip(axes, [\"Clay\", \"Silt\"]):\n    fitted = hoal[f\"{target}_fitted\"]\n    residual = hoal[f\"{target}_residual\"]\n    worst = residual.abs().nlargest(4).index\n\n    ax.scatter(fitted, residual, s=55, color=\"#CBD5E1\", edgecolor=\"white\", zorder=3)\n    ax.scatter(fitted[worst], residual[worst], s=65, color=COLORS[target],\n               edgecolor=\"white\", zorder=4)\n    for i in worst:\n        ax.annotate(hoal.loc[i, \"Sample\"], (fitted[i], residual[i]),\n                    xytext=(6, 4), textcoords=\"offset points\", fontsize=8, color=\"#334155\")\n\n    ax.axhline(0, color=LINE_COLOR, linewidth=1.5)\n    add_header(ax, f\"{target} ~ U238: residuals (4 largest in colour)\")\n    ax.set_xlabel(\"Fitted value (%)\")\n    ax.set_ylabel(\"Residual (%)\")\n\nplt.tight_layout()\nplt.show()\n\n\n\n\n\n\n\n\nThe residuals scatter around zero with no clear curve, so a straight line is a reasonable description at this sample size. Silt spreads out more at higher fitted values than at lower ones.\nThe four samples with the largest residuals:\n\nlargest = hoal[\"Clay_residual\"].abs().nlargest(4).index\nhoal.loc[largest, [\"Sample\", \"U238\", \"Clay\", \"Clay_residual\", \"Silt\", \"Silt_residual\"]].round(1)\n\n\n\n\n\n\n\n\nSample\nU238\nClay\nClay_residual\nSilt\nSilt_residual\n\n\n\n\n2\nBK6087\n41.4\n26.5\n-7.7\n65.8\n6.9\n\n\n0\nBK6081\n46.6\n34.5\n6.0\n57.5\n-7.0\n\n\n6\nBK6102\n49.2\n20.7\n-5.0\n71.4\n4.1\n\n\n4\nBK6099\n39.6\n40.6\n4.5\n52.8\n-4.2\n\n\n\n\n\n\n\nClay and silt mirror each other, so the same samples are residuals for both.",
+    "crumbs": [
+      "Projects",
+      "HOAL to Raasdorf 2024"
+    ]
+  },
+  {
+    "objectID": "3-HOAL-to-raasdorf-2024.html#check-that-the-two-sites-overlap-in-texture",
+    "href": "3-HOAL-to-raasdorf-2024.html#check-that-the-two-sites-overlap-in-texture",
+    "title": "A: HOAL to Raasdorf_2024",
+    "section": "Check that the two sites overlap in texture",
+    "text": "Check that the two sites overlap in texture\nThe isotope check above is not enough. The textures must overlap too, or the model has to predict values it never saw.\n\nrows = []\nfor target in [\"Clay\", \"Silt\", \"Sand\"]:\n    low, high = hoal[target].min(), hoal[target].max()\n    values = raasdorf_2024[target]\n    rows.append({\n        \"texture\": target,\n        \"HOAL range\": f\"{low:.1f} to {high:.1f}\",\n        \"Raasdorf_2024 range\": f\"{values.min():.1f} to {values.max():.1f}\",\n        \"% Raasdorf outside HOAL range\": ((values &lt; low) | (values &gt; high)).mean() * 100,\n    })\n\npd.DataFrame(rows).round(0)\n\n\n\n\n\n\n\n\ntexture\nHOAL range\nRaasdorf_2024 range\n% Raasdorf outside HOAL range\n\n\n\n\n0\nClay\n20.3 to 41.2\n4.4 to 12.1\n100.0\n\n\n1\nSilt\n50.6 to 73.1\n57.2 to 69.1\n0.0\n\n\n2\nSand\n5.9 to 8.2\n23.8 to 35.0\n100.0",
+    "crumbs": [
+      "Projects",
+      "HOAL to Raasdorf 2024"
+    ]
+  },
+  {
+    "objectID": "3-HOAL-to-raasdorf-2024.html#apply-the-hoal-model-to-raasdorf_2024",
+    "href": "3-HOAL-to-raasdorf-2024.html#apply-the-hoal-model-to-raasdorf_2024",
+    "title": "A: HOAL to Raasdorf_2024",
+    "section": "Apply the HOAL model to Raasdorf_2024",
+    "text": "Apply the HOAL model to Raasdorf_2024\nNow the test. The line for each texture is fitted once on all the HOAL samples, then applied to the Raasdorf_2024 U238 values. Nothing is refitted on Raasdorf. We compare the predictions with the lab values using four numbers:\n\nbias: the average of predicted minus observed. Zero means no systematic over- or under-prediction.\nRMSE: the typical size of the error, in percentage points of texture.\nbaseline RMSE: the error we would get by always predicting the HOAL mean texture, with no model. A useful model has to beat it.\nR2 transfer: how much better the model is than predicting the Raasdorf mean. It can be negative, which means the model does worse than that.\n\n\nchosen = {\"Clay\": \"U238\", \"Silt\": \"U238\"}\n\nrows = []\npredictions = {}\nfor target, predictor in chosen.items():\n    # Fit the line at HOAL, the reference site\n    fit = stats.linregress(hoal[predictor], hoal[target])\n\n    # Put the Raasdorf gamma-ray values into the HOAL line (nothing is refitted)\n    predicted = fit.intercept + fit.slope * raasdorf_2024[predictor]\n    predictions[target] = predicted\n\n    # Compare with the lab values\n    observed = raasdorf_2024[target]\n    error = predicted - observed\n\n    rows.append({\n        \"target\": target,\n        \"predictor\": predictor,\n        \"bias\": error.mean(),\n        \"RMSE\": np.sqrt((error ** 2).mean()),\n        \"baseline RMSE\": np.sqrt(((hoal[target].mean() - observed) ** 2).mean()),\n        \"R2 transfer\": 1 - (error ** 2).sum() / ((observed - observed.mean()) ** 2).sum(),\n    })\n\ntransfer_a = pd.DataFrame(rows).round(2)\ntransfer_a\n\n\n\n\n\n\n\n\ntarget\npredictor\nbias\nRMSE\nbaseline RMSE\nR2 transfer\n\n\n\n\n0\nClay\nU238\n27.92\n28.32\n24.37\n-154.14\n\n\n1\nSilt\nU238\n-5.65\n7.55\n4.07\n-3.52\n\n\n\n\n\n\n\n\nobserved = raasdorf_2024[target]\nerror = predicted - observed\n\nbias = error.mean()                                          \nrmse = np.sqrt((error ** 2).mean())                         \nbaseline = np.sqrt(((hoal[target].mean() - observed) ** 2).mean())   \nr2 = 1 - (error ** 2).sum() / ((observed - observed.mean()) ** 2).sum()\n\nThe baseline is what we would get by always predicting the HOAL mean texture, so the model is only useful if its RMSE is below it.\nWe use U238 because it had the lowest error at HOAL and the best overlap with the new site’s values (see “Choose the predictor”). To try another site or predictor, only the tables and the chosen line change.\n\nfig, axes = plt.subplots(1, 2, figsize=(9, 4.5))\nfor ax, target in zip(axes, chosen):\n    observed = raasdorf_2024[target]\n    predicted = predictions[target]\n    low = min(observed.min(), predicted.min()) - 2\n    high = max(observed.max(), predicted.max()) + 2\n\n    ax.plot([low, high], [low, high], color=LINE_COLOR, linewidth=1.5, linestyle=\"--\", zorder=2)\n    ax.scatter(observed, predicted, s=55, color=COLORS[target],\n               edgecolor=\"white\", linewidth=0.8, zorder=3)\n    add_header(ax, f\"{target}: predicted vs observed\")\n    ax.set_xlabel(\"Observed, lab (%)\")\n    ax.set_ylabel(\"Predicted from HOAL (%)\")\n    ax.set_xlim(low, high)\n    ax.set_ylim(low, high)\n\nplt.tight_layout()\nplt.show()\n\n\n\n\n\n\n\n\nThe direct transfer does not work, because the two sites have different soils. Every Raasdorf_2024 clay value (4 to 12%) is below the lowest HOAL value (20%), and Raasdorf has about 29% sand where HOAL has about 7%. The model was therefore asked to predict textures it never saw. The isotope check did not catch this: U238 overlaps well, but the textures do not. A transfer needs the reference and target sites to overlap in texture as well as in gamma-ray values.",
+    "crumbs": [
+      "Projects",
+      "HOAL to Raasdorf 2024"
+    ]
+  },
+  {
+    "objectID": "3-HOAL-to-raasdorf-2024.html#limits-to-keep-in-mind",
+    "href": "3-HOAL-to-raasdorf-2024.html#limits-to-keep-in-mind",
+    "title": "A: HOAL to Raasdorf_2024",
+    "section": "Limits to keep in mind",
+    "text": "Limits to keep in mind\n\n\n\n\n\n\nWarning\n\n\n\n\nOnly 13 HOAL samples. Every number above is rough.\nA gap in the HOAL data. No HOAL sample has a U238 value between about 41 and 47 Bq/kg, and the two worst-fitted samples sit on either side of that gap. The line is untested there.\nOnly U238 could be used. Th232 is entirely outside the HOAL range at Raasdorf, and K40 and the ratio are about half outside.\nSand is not modelled, because it hardly varies at HOAL.\nThis is a test, not a proof. A good result here says the transfer worked for these 19 points, not that it will work everywhere.\n\n\n\n\nrows = []\nfor target in [\"Clay\", \"Silt\"]:\n    predicted = predictions[target].to_numpy()\n    observed = raasdorf_2024[target].to_numpy()\n\n    shifted_errors = []\n    mean_errors = []\n    for i in range(len(observed)):\n        others = np.arange(len(observed)) != i\n        shift = (observed[others] - predicted[others]).mean()\n        shifted_errors.append(observed[i] - (predicted[i] + shift))\n        mean_errors.append(observed[i] - observed[others].mean())\n\n    rows.append({\n        \"texture\": target,\n        \"slope of observed on predicted\": stats.linregress(predicted, observed).slope,\n        \"LOO RMSE, HOAL line shifted\": np.sqrt(np.mean(np.square(shifted_errors))),\n        \"LOO RMSE, local mean only\": np.sqrt(np.mean(np.square(mean_errors))),\n    })\n\npd.DataFrame(rows).round(2)\n\n\n\n\n\n\n\n\ntexture\nslope of observed on predicted\nLOO RMSE, HOAL line shifted\nLOO RMSE, local mean only\n\n\n\n\n0\nClay\n-0.27\n5.05\n2.40\n\n\n1\nSilt\n-0.05\n5.29\n3.75",
+    "crumbs": [
+      "Projects",
+      "HOAL to Raasdorf 2024"
+    ]
+  },
+  {
+    "objectID": "3-HOAL-to-raasdorf-2024.html#re-calibration-of-the-large-intercept-correction",
+    "href": "3-HOAL-to-raasdorf-2024.html#re-calibration-of-the-large-intercept-correction",
+    "title": "A: HOAL to Raasdorf_2024",
+    "section": "Re-calibration-of-the-large / intercept correction",
+    "text": "Re-calibration-of-the-large / intercept correction\nRecalibration of the intercept, keeping the slope from the reference site, is a standard model-updating method (janssen2008?) and the simplest form of bias correction in calibration transfer (dardenne2004?). Because it leaves the slope unchanged, it corrects the level of the predictions but not how well they rank the samples.",
+    "crumbs": [
+      "Projects",
+      "HOAL to Raasdorf 2024"
+    ]
+  },
+  {
+    "objectID": "1-Loading-gamma-ray-and-soil-data.html",
+    "href": "1-Loading-gamma-ray-and-soil-data.html",
+    "title": "Loading gamma-ray and soil data",
+    "section": "",
+    "text": "This page loads the three datasets the analysis is built on. Each one is a plain CSV file in the data/ folder, and each ends up as one pandas table (a DataFrame).",
+    "crumbs": [
+      "Projects",
+      "Loading Gamma-ray and soil data"
+    ]
+  },
+  {
+    "objectID": "1-Loading-gamma-ray-and-soil-data.html#install-python",
+    "href": "1-Loading-gamma-ray-and-soil-data.html#install-python",
+    "title": "Loading gamma-ray and soil data",
+    "section": "Install Python",
+    "text": "Install Python\nDownload Python 3.10 or later from python.org and run the installer.\n\n\n\n\n\n\nWarningWindows users\n\n\n\nOn the first screen of the installer, tick Add python.exe to PATH. If you forget, your terminal won’t find Python and the next steps will fail.\n\n\nTo check it worked, open a terminal and run:\n\n\nTerminal\n\npython --version\n\nYou should see something like Python 3.12.x. On macOS and Linux, the command may be python3 instead of python. If so, use python3 everywhere in this guide.\n\n\n\n\n\n\nTipLinux (Debian / Ubuntu)\n\n\n\nYou also need the tool that creates virtual environments:\n\n\nTerminal\n\nsudo apt install python3-venv",
+    "crumbs": [
+      "Projects",
+      "Loading Gamma-ray and soil data"
+    ]
+  },
+  {
+    "objectID": "1-Loading-gamma-ray-and-soil-data.html#install-an-editor",
+    "href": "1-Loading-gamma-ray-and-soil-data.html#install-an-editor",
+    "title": "Loading gamma-ray and soil data",
+    "section": "Install an editor",
+    "text": "Install an editor\nYou need somewhere to open the notebook and run the code. Pick one. Both are free and both work well.\n\nOption 1: Positron (recommended)\nDownload Positron and install it. It is built for data science: you see your code, your plots, and your variables all in one window, and it runs Python and R side by side.\nOnce it is installed, open it and check that it found Python: look at the interpreter picker in the bottom status bar. If you don’t see your Python version there, click the picker and choose it from the list.\n\n\nOption 2: Visual Studio Code\nIf you already use VS Code, you can stay with it. Positron is built on the same foundation, so it will feel familiar. Install these two extensions from the Extensions panel:\n\nPython (by Microsoft)\nJupyter (by Microsoft)\n\nWithout the Jupyter extension, VS Code can’t open .ipynb notebooks.",
+    "crumbs": [
+      "Projects",
+      "Loading Gamma-ray and soil data"
+    ]
+  },
+  {
+    "objectID": "1-Loading-gamma-ray-and-soil-data.html#get-the-project-files",
+    "href": "1-Loading-gamma-ray-and-soil-data.html#get-the-project-files",
+    "title": "Loading gamma-ray and soil data",
+    "section": "Get the project files",
+    "text": "Get the project files\nGo to the project repository on GitHub, click Code -&gt; Download ZIP, and unzip it.\nIf you already use git, you can clone it instead:\n\n\nTerminal\n\ngit clone https://github.com/your-username/your-repo.git\n\nThe folder contains the notebook (soil_texture_raasdorf.ipynb) and a file called requirements.txt. That file is the list of packages we use.",
+    "crumbs": [
+      "Projects",
+      "Loading Gamma-ray and soil data"
+    ]
+  },
+  {
+    "objectID": "1-Loading-gamma-ray-and-soil-data.html#open-the-project-folder",
+    "href": "1-Loading-gamma-ray-and-soil-data.html#open-the-project-folder",
+    "title": "Loading gamma-ray and soil data",
+    "section": "Open the project folder",
+    "text": "Open the project folder\nOpen the whole project folder in your editor, not just the notebook file.\n\nPositron or VS Code: File -&gt; Open Folder…, then choose the project folder.\n\nThis matters because the next step creates the environment inside this folder, and the editor needs to be looking at the same place.",
+    "crumbs": [
+      "Projects",
+      "Loading Gamma-ray and soil data"
+    ]
+  },
+  {
+    "objectID": "1-Loading-gamma-ray-and-soil-data.html#create-your-environment",
+    "href": "1-Loading-gamma-ray-and-soil-data.html#create-your-environment",
+    "title": "Loading gamma-ray and soil data",
+    "section": "Create your environment",
+    "text": "Create your environment\nThink of a virtual environment as a clean lab bench just for this project. The packages you install on it stay on it, so they never clash with other Python projects on your computer.\nOpen a terminal inside your editor (Terminal -&gt; New Terminal). It opens in the project folder already.\nStep 1. Create the environment. This makes a hidden folder called .venv:\n\n\nTerminal\n\npython -m venv .venv\n\nStep 2. Switch it on:\n\nWindowsmacOS / Linux\n\n\n\n\nTerminal\n\n.venv\\Scripts\\activate\n\n\n\n\n\nTerminal\n\nsource .venv/bin/activate\n\n\n\n\nYou should now see (.venv) at the start of your terminal line. That means the bench is ready.\n\n\n\n\n\n\nTipWindows PowerShell says “running scripts is disabled”?\n\n\n\nRun this once, then try the activate command again:\n\n\nTerminal\n\nSet-ExecutionPolicy -Scope CurrentUser RemoteSigned",
+    "crumbs": [
+      "Projects",
+      "Loading Gamma-ray and soil data"
+    ]
+  },
+  {
+    "objectID": "1-Loading-gamma-ray-and-soil-data.html#install-the-packages",
+    "href": "1-Loading-gamma-ray-and-soil-data.html#install-the-packages",
+    "title": "Loading gamma-ray and soil data",
+    "section": "Install the packages",
+    "text": "Install the packages\nWith (.venv) showing, run:\n\n\nTerminal\n\npip install -r requirements.txt\n\nThis reads requirements.txt and installs everything the notebook needs. It can take a few minutes the first time.\nHere is what is in that file and why:\n\n\n\n\n\n\n\nPackage\nWhat we use it for\n\n\n\n\nnumpy\nNumbers and arrays, plus the permutation tests\n\n\npandas\nReading the CSV files and working with tables\n\n\nmatplotlib\nEvery figure in the analysis\n\n\nscipy\nLinear regressions and nearest-neighbour matching of GPS points\n\n\nstatsmodels\nMultiple regression, VIF, and ANCOVA\n\n\nipykernel\nLets your editor run the notebook with this environment\n\n\n\nIf you would rather install them by hand, this does the same thing:\n\n\nTerminal\n\npip install numpy pandas matplotlib scipy statsmodels ipykernel",
+    "crumbs": [
+      "Projects",
+      "Loading Gamma-ray and soil data"
+    ]
+  },
+  {
+    "objectID": "1-Loading-gamma-ray-and-soil-data.html#tell-the-notebook-which-python-to-use",
+    "href": "1-Loading-gamma-ray-and-soil-data.html#tell-the-notebook-which-python-to-use",
+    "title": "Loading gamma-ray and soil data",
+    "section": "Tell the notebook which Python to use",
+    "text": "Tell the notebook which Python to use\nOpen soil_texture_raasdorf.ipynb. In the top-right corner, click the kernel (or interpreter) picker and choose the one that points to .venv.\nIf you don’t see it, close the notebook, restart the editor, and try again. The .venv environment appears once the editor has noticed the folder.",
+    "crumbs": [
+      "Projects",
+      "Loading Gamma-ray and soil data"
+    ]
+  },
+  {
+    "objectID": "1-Loading-gamma-ray-and-soil-data.html#point-the-notebook-to-your-data",
+    "href": "1-Loading-gamma-ray-and-soil-data.html#point-the-notebook-to-your-data",
+    "title": "Loading gamma-ray and soil data",
+    "section": "Point the notebook to your data",
+    "text": "Point the notebook to your data\nThe notebook reads three CSV files from a folder. In the early setup cell you will find a line like this:\n\n\nNotebook\n\nBASE_DIR = r\"E:\\Gamma Ray Sensor\\Raasdorf_July 22, 2026\\Soil_Texture\"\n\nChange it to the folder where your copies of the files live:\n\nSoil_data_HOAL.csv\nTrial.csv\nconcentrations_NNLS_output.csv",
+    "crumbs": [
+      "Projects",
+      "Loading Gamma-ray and soil data"
+    ]
+  },
+  {
+    "objectID": "1-Loading-gamma-ray-and-soil-data.html#check-everything-works",
+    "href": "1-Loading-gamma-ray-and-soil-data.html#check-everything-works",
+    "title": "Loading gamma-ray and soil data",
+    "section": "Check everything works",
+    "text": "Check everything works\nRun this in a notebook cell:\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib\nimport scipy\nimport statsmodels\n\nimport scipy as stats\n\nfor pkg in [np, pd, matplotlib, scipy, statsmodels]:\n    print(f\"{pkg.__name__:12} {pkg.__version__}\")\n\nIf you see five package names with version numbers and no errors, you are set up and ready to go.",
+    "crumbs": [
+      "Projects",
+      "Loading Gamma-ray and soil data"
+    ]
+  },
+  {
+    "objectID": "1-Loading-gamma-ray-and-soil-data.html#if-something-goes-wrong",
+    "href": "1-Loading-gamma-ray-and-soil-data.html#if-something-goes-wrong",
+    "title": "Loading gamma-ray and soil data",
+    "section": "If something goes wrong",
+    "text": "If something goes wrong\n\n\n\n\n\n\n\nWhat you see\nWhat to try\n\n\n\n\npython is not recognized\nReinstall Python and tick Add python.exe to PATH (Windows), or use python3 (macOS / Linux).\n\n\nModuleNotFoundError: No module named 'pandas'\nThe notebook is using the wrong Python. Pick the .venv kernel (see above), and check (.venv) shows in your terminal.\n\n\npip is not recognized\nUse python -m pip install -r requirements.txt instead.\n\n\nFileNotFoundError when loading data\nCheck that BASE_DIR points to the right folder and the file names match exactly.",
+    "crumbs": [
+      "Projects",
+      "Loading Gamma-ray and soil data"
+    ]
+  },
+  {
+    "objectID": "1-Loading-gamma-ray-and-soil-data.html#cheatsheet",
+    "href": "1-Loading-gamma-ray-and-soil-data.html#cheatsheet",
+    "title": "Loading gamma-ray and soil data",
+    "section": "Cheatsheet",
+    "text": "Cheatsheet\nRun these in the terminal, with the project open.\n\n\n\n\n\n\n\nCommand\nWhat it does\n\n\n\n\npython -m venv .venv\nCreates the environment (once).\n\n\n.venv\\Scripts\\activate\nSwitches it on (Windows).\n\n\nsource .venv/bin/activate\nSwitches it on (macOS / Linux).\n\n\npip install -r requirements.txt\nInstalls everything the project needs.\n\n\npip list\nShows what is installed.\n\n\npip freeze &gt; requirements.txt\nSaves your exact package versions to the file.\n\n\ndeactivate\nSwitches the environment off.\n\n\n\nYou only need the first three commands and pip install -r once. After that, you just activate the environment each time you come back.",
+    "crumbs": [
+      "Projects",
+      "Loading Gamma-ray and soil data"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Gamma Ray Sensor",
+    "section": "",
+    "text": "TEST LINE",
+    "crumbs": [
+      "Home"
+    ]
+  },
+  {
+    "objectID": "index.html#why-tidyverse-and-tidymodels",
+    "href": "index.html#why-tidyverse-and-tidymodels",
+    "title": "Gamma Ray Sensor",
+    "section": "Why tidyverse and tidymodels",
+    "text": "Why tidyverse and tidymodels\ntext here",
+    "crumbs": [
+      "Home"
+    ]
+  },
+  {
+    "objectID": "index.html#how-this-course-teaches",
+    "href": "index.html#how-this-course-teaches",
+    "title": "Gamma Ray Sensor",
+    "section": "How this course teaches",
+    "text": "How this course teaches\nText here",
+    "crumbs": [
+      "Home"
+    ]
+  },
+  {
+    "objectID": "index.html#the-course",
+    "href": "index.html#the-course",
+    "title": "Gamma Ray Sensor",
+    "section": "The course",
+    "text": "The course\n\nGetting set up: install R, Positron, and the packages this course uses.\nThe full pipeline: load, preprocess, tune, test, and predict, once, end to end, before any of it gets explained.\nLoading spectral data: read a folder of OPUS files and a wet chemistry CSV into one tibble.\nExploratory data analysis: look at the spectra and the soil properties before modelling anything.\nFeature engineering: build a recipes pipeline out of resampling, SNV, and Savitzky-Golay steps.\nOutlier detection: use PCA on the preprocessed spectra to find samples a model shouldn’t trust.\nEvaluating performance: split the data, fit a model, and score it with tidymodels.\nPreparing a model for inference: save a fitted model, load it again, and predict new spectra.\nPreparing OSSL: pull a working sample from the Open Soil Spectral Library.\nPredicting exchangeable potassium using OSSL: the same pipeline, run end to end on a public, global dataset.\n\n\nGoing further\ntext here",
+    "crumbs": [
+      "Home"
+    ]
+  },
+  {
+    "objectID": "0-introduction.html",
+    "href": "0-introduction.html",
+    "title": "Getting set up",
+    "section": "",
+    "text": "This guide gets your computer ready to run the Raasdorf soil texture notebook. You will install Python, an editor, and five packages. It takes about 15 minutes.",
+    "crumbs": [
+      "Projects",
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "0-introduction.html#install-python",
+    "href": "0-introduction.html#install-python",
+    "title": "Getting set up",
+    "section": "Install Python",
+    "text": "Install Python\nDownload Python 3.10 or later from python.org and run the installer.\n\n\n\n\n\n\nWarningWindows users\n\n\n\nOn the first screen of the installer, tick Add python.exe to PATH. If you forget, your terminal won’t find Python and the next steps will fail.\n\n\nTo check it worked, open a terminal and run:\n\n\nTerminal\n\npython --version\n\nYou should see something like Python 3.12.x. On macOS and Linux, the command may be python3 instead of python. If so, use python3 everywhere in this guide.\n\n\n\n\n\n\nTipLinux (Debian / Ubuntu)\n\n\n\nYou also need the tool that creates virtual environments:\n\n\nTerminal\n\nsudo apt install python3-venv",
+    "crumbs": [
+      "Projects",
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "0-introduction.html#install-an-editor",
+    "href": "0-introduction.html#install-an-editor",
+    "title": "Getting set up",
+    "section": "Install an editor",
+    "text": "Install an editor\nYou need somewhere to open the notebook and run the code. Pick one. Both are free and both work well.\n\nOption 1: Positron (recommended)\nDownload Positron and install it. It is built for data science: you see your code, your plots, and your variables all in one window, and it runs Python and R side by side.\nOnce it is installed, open it and check that it found Python: look at the interpreter picker in the bottom status bar. If you don’t see your Python version there, click the picker and choose it from the list.\n\n\nOption 2: Visual Studio Code\nIf you already use VS Code, you can stay with it. Positron is built on the same foundation, so it will feel familiar. Install these two extensions from the Extensions panel:\n\nPython (by Microsoft)\nJupyter (by Microsoft)\n\nWithout the Jupyter extension, VS Code can’t open .ipynb notebooks.",
+    "crumbs": [
+      "Projects",
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "0-introduction.html#get-the-project-files",
+    "href": "0-introduction.html#get-the-project-files",
+    "title": "Getting set up",
+    "section": "Get the project files",
+    "text": "Get the project files\nGo to the project repository on GitHub, click Code -&gt; Download ZIP, and unzip it.\nIf you already use git, you can clone it instead:\n\n\nTerminal\n\ngit clone https://github.com/your-username/your-repo.git\n\nThe folder contains the notebook (soil_texture_raasdorf.ipynb) and a file called requirements.txt. That file is the list of packages we use.",
+    "crumbs": [
+      "Projects",
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "0-introduction.html#open-the-project-folder",
+    "href": "0-introduction.html#open-the-project-folder",
+    "title": "Getting set up",
+    "section": "Open the project folder",
+    "text": "Open the project folder\nOpen the whole project folder in your editor, not just the notebook file.\n\nPositron or VS Code: File -&gt; Open Folder…, then choose the project folder.\n\nThis matters because the next step creates the environment inside this folder, and the editor needs to be looking at the same place.",
+    "crumbs": [
+      "Projects",
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "0-introduction.html#create-your-environment",
+    "href": "0-introduction.html#create-your-environment",
+    "title": "Getting set up",
+    "section": "Create your environment",
+    "text": "Create your environment\nThink of a virtual environment as a clean lab bench just for this project. The packages you install on it stay on it, so they never clash with other Python projects on your computer.\nOpen a terminal inside your editor (Terminal -&gt; New Terminal). It opens in the project folder already.\nStep 1. Create the environment. This makes a hidden folder called .venv:\n\n\nTerminal\n\npython -m venv .venv\n\nStep 2. Switch it on:\n\nWindowsmacOS / Linux\n\n\n\n\nTerminal\n\n.venv\\Scripts\\activate\n\n\n\n\n\nTerminal\n\nsource .venv/bin/activate\n\n\n\n\nYou should now see (.venv) at the start of your terminal line. That means the bench is ready.\n\n\n\n\n\n\nTipWindows PowerShell says “running scripts is disabled”?\n\n\n\nRun this once, then try the activate command again:\n\n\nTerminal\n\nSet-ExecutionPolicy -Scope CurrentUser RemoteSigned",
+    "crumbs": [
+      "Projects",
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "0-introduction.html#install-the-packages",
+    "href": "0-introduction.html#install-the-packages",
+    "title": "Getting set up",
+    "section": "Install the packages",
+    "text": "Install the packages\nWith (.venv) showing, run:\n\n\nTerminal\n\npip install -r requirements.txt\n\nThis reads requirements.txt and installs everything the notebook needs. It can take a few minutes the first time.\nHere is what is in that file and why:\n\n\n\n\n\n\n\nPackage\nWhat we use it for\n\n\n\n\nnumpy\nNumbers and arrays, plus the permutation tests\n\n\npandas\nReading the CSV files and working with tables\n\n\nmatplotlib\nEvery figure in the analysis\n\n\nscipy\nLinear regressions and nearest-neighbour matching of GPS points\n\n\nstatsmodels\nMultiple regression, VIF, and ANCOVA\n\n\nipykernel\nLets your editor run the notebook with this environment\n\n\n\nIf you would rather install them by hand, this does the same thing:\n\n\nTerminal\n\npip install numpy pandas matplotlib scipy statsmodels ipykernel",
+    "crumbs": [
+      "Projects",
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "0-introduction.html#tell-the-notebook-which-python-to-use",
+    "href": "0-introduction.html#tell-the-notebook-which-python-to-use",
+    "title": "Getting set up",
+    "section": "Tell the notebook which Python to use",
+    "text": "Tell the notebook which Python to use\nOpen soil_texture_raasdorf.ipynb. In the top-right corner, click the kernel (or interpreter) picker and choose the one that points to .venv.\nIf you don’t see it, close the notebook, restart the editor, and try again. The .venv environment appears once the editor has noticed the folder.",
+    "crumbs": [
+      "Projects",
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "0-introduction.html#point-the-notebook-to-your-data",
+    "href": "0-introduction.html#point-the-notebook-to-your-data",
+    "title": "Getting set up",
+    "section": "Point the notebook to your data",
+    "text": "Point the notebook to your data\nThe notebook reads three CSV files from a folder. In the early setup cell you will find a line like this:\n\n\nNotebook\n\nBASE_DIR = r\"E:\\Gamma Ray Sensor\\Raasdorf_July 22, 2026\\Soil_Texture\"\n\nChange it to the folder where your copies of the files live:\n\nSoil_data_HOAL.csv\nTrial.csv\nconcentrations_NNLS_output.csv",
+    "crumbs": [
+      "Projects",
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "0-introduction.html#check-everything-works",
+    "href": "0-introduction.html#check-everything-works",
+    "title": "Getting set up",
+    "section": "Check everything works",
+    "text": "Check everything works\nRun this in a notebook cell:\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib\nimport scipy\nimport statsmodels\n\nfrom scipy import stats\n\nfor pkg in [np, pd, matplotlib, scipy, statsmodels]:\n    print(f\"{pkg.__name__:12} {pkg.__version__}\")\n\nIf you see five package names with version numbers and no errors, you are set up and ready to go.",
+    "crumbs": [
+      "Projects",
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "0-introduction.html#if-something-goes-wrong",
+    "href": "0-introduction.html#if-something-goes-wrong",
+    "title": "Getting set up",
+    "section": "If something goes wrong",
+    "text": "If something goes wrong\n\n\n\n\n\n\n\nWhat you see\nWhat to try\n\n\n\n\npython is not recognized\nReinstall Python and tick Add python.exe to PATH (Windows), or use python3 (macOS / Linux).\n\n\nModuleNotFoundError: No module named 'pandas'\nThe notebook is using the wrong Python. Pick the .venv kernel (see above), and check (.venv) shows in your terminal.\n\n\npip is not recognized\nUse python -m pip install -r requirements.txt instead.\n\n\nFileNotFoundError when loading data\nCheck that BASE_DIR points to the right folder and the file names match exactly.",
+    "crumbs": [
+      "Projects",
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "0-introduction.html#cheatsheet",
+    "href": "0-introduction.html#cheatsheet",
+    "title": "Getting set up",
+    "section": "Cheatsheet",
+    "text": "Cheatsheet\nRun these in the terminal, with the project open.\n\n\n\n\n\n\n\nCommand\nWhat it does\n\n\n\n\npython -m venv .venv\nCreates the environment (once).\n\n\n.venv\\Scripts\\activate\nSwitches it on (Windows).\n\n\nsource .venv/bin/activate\nSwitches it on (macOS / Linux).\n\n\npip install -r requirements.txt\nInstalls everything the project needs.\n\n\npip list\nShows what is installed.\n\n\npip freeze &gt; requirements.txt\nSaves your exact package versions to the file.\n\n\ndeactivate\nSwitches the environment off.\n\n\n\nYou only need the first three commands and pip install -r once. After that, you just activate the environment each time you come back.",
+    "crumbs": [
+      "Projects",
+      "Introduction"
+    ]
+  },
+  {
+    "objectID": "2-Exploratory-data-analysis.html",
+    "href": "2-Exploratory-data-analysis.html",
+    "title": "Exploratory data analysis",
+    "section": "",
+    "text": "getting the data\nsummary statistics .describe() for each table, plus missing values, zeros and negatives in U238\nHistograms: clay, silt and sand for HOAL vs Raasdorf_2024, and U238, K40 and Th232 for all three datasets.\nCorrelation: your heatmap and VIF (Step 2) belong here, not in the modelling.\nData checks: do sand and silt and clay add up to 100%? How far apart are the 19 Raasdorf points from their nearest survey reading (dist_m)? Are there duplicate coordinates?\nThe goal of this analysis is a transfer model: fit a relationship between gamma-ray values and soil texture at one site (HOAL), then use it at another (Raasdorf). A transfer only works if the two sites look alike. So the questions on this page are simple ones:",
+    "crumbs": [
+      "Projects",
+      "Exploratory Data Analysis"
+    ]
+  },
+  {
+    "objectID": "2-Exploratory-data-analysis.html#set-up",
+    "href": "2-Exploratory-data-analysis.html#set-up",
+    "title": "Exploratory data analysis",
+    "section": "Set up",
+    "text": "Set up\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt",
+    "crumbs": [
+      "Projects",
+      "Exploratory Data Analysis"
+    ]
+  },
+  {
+    "objectID": "2-Exploratory-data-analysis.html#getting-data",
+    "href": "2-Exploratory-data-analysis.html#getting-data",
+    "title": "Exploratory data analysis",
+    "section": "Getting data",
+    "text": "Getting data\nThis loads and renames the same three tables as Loading gamma-ray and soil data, in one go.\n\nhoal = pd.read_csv(\"data/HOAL.csv\")\nhoal = hoal.rename(columns={\"Sand_2023\": \"Sand\", \"Clay_2023\": \"Clay\", \"Silt_2023\": \"Silt\"})\n\nraasdorf_2024 = pd.read_csv(\"data/Raasdorf_2024.csv\")\n\nraasdorf_2026 = pd.read_csv(\"data/Raasdorf_2026.csv\")\nraasdorf_2026 = raasdorf_2026.rename(columns={\"40-K\": \"K40\", \"238-U\": \"U238\", \"232-Th\": \"Th232\"})\n\nfor table in (hoal, raasdorf_2024, raasdorf_2026):\n    table[\"Ratio\"] = table[\"U238\"] / table[\"Th232\"].replace(0, np.nan)\n\nisotopes = [\"K40\", \"U238\", \"Th232\"]\ntexture = [\"Clay\", \"Silt\", \"Sand\"]",
+    "crumbs": [
+      "Projects",
+      "Exploratory Data Analysis"
+    ]
+  },
+  {
+    "objectID": "2-Exploratory-data-analysis.html#zeros-in-the-raasdorf_2026-survey",
+    "href": "2-Exploratory-data-analysis.html#zeros-in-the-raasdorf_2026-survey",
+    "title": "Exploratory data analysis",
+    "section": "Zeros in the Raasdorf_2026 survey",
+    "text": "Zeros in the Raasdorf_2026 survey\nSome rows in the survey have an isotope value of exactly zero. These zeros are not measurements of “no uranium”. They come from the way the spectra are analysed.\nThe standard least-squares fit can return negative concentrations when a spectrum has very few counts, because the maths is happy with negative values. To avoid that, the survey is analysed with non-negative least squares (NNLS): if a concentration comes out negative, it is set to zero and the fit is repeated with the remaining nuclides (medusa_negative?). The constraint itself was introduced into full-spectrum analysis to avoid non-physical results (caciolli2011?).\nA zero therefore means “too weak to say”, not “measured as zero”. We count them, keep a copy of the full survey for the map further down, and then drop every row where K40, U238 or Th232 is zero:\n\nprint(f\"Rows in the survey: {len(raasdorf_2026)}\")\nfor iso in isotopes:\n    print(f\"{iso}: {(raasdorf_2026[iso] == 0).sum()} zeros\")\n\nsurvey_all = raasdorf_2026.copy()\nraasdorf_2026 = raasdorf_2026[(raasdorf_2026[isotopes] &gt; 0).all(axis=1)]\n\nprint(f\"Rows kept: {len(raasdorf_2026)}\")\nprint(f\"Rows dropped: {len(survey_all) - len(raasdorf_2026)}\")\n\nRows in the survey: 2019\nK40: 1 zeros\nU238: 273 zeros\nTh232: 68 zeros\nRows kept: 1678\nRows dropped: 341\n\n\nThe &gt; 0 test also removes any negative or missing value, so it is safe even if the file changes later. We filter on the three natural isotopes only. Cs137 is also in the file, but the analysis doesn’t use it.\nFrom here on we work with the cleaned tables. We put them in one dictionary so later code can loop over them:\n\ntables = {\"HOAL\": hoal, \"Raasdorf_2024\": raasdorf_2024, \"Raasdorf_2026\": raasdorf_2026}\n\n\n\n\n\n\n\nWarningWhat dropping the zeros costs\n\n\n\nThe dropped rows are, most often, spectra with very few counts. Removing them cuts off the low end of the distribution. The values that remain are, on average, a little higher than the full survey, and low-signal spots are under-represented. The Medusa documentation points to the same thing: because negatives are clamped to zero, the distribution of concentrations has a cut-off at zero and no longer follows Poisson statistics (medusa_negative?).\nHow large the effect is depends on how many rows are dropped. That is why we print the counts above and map where the dropped rows are, below. An alternative is to keep the zeros and treat them as “below detection”, but that is more complex, so we drop them and state the limitation.",
+    "crumbs": [
+      "Projects",
+      "Exploratory Data Analysis"
+    ]
+  },
+  {
+    "objectID": "2-Exploratory-data-analysis.html#summary-statistics",
+    "href": "2-Exploratory-data-analysis.html#summary-statistics",
+    "title": "Exploratory data analysis",
+    "section": "Summary statistics",
+    "text": "Summary statistics\nThe quickest way to see a table is .describe(). It gives the count, mean, spread and quartiles of each column.\n\nfor name, table in tables.items():\n    print(name)\n    print(table[isotopes].describe().round(1))\n    print()\n\nHOAL\n         K40  U238  Th232\ncount   13.0  13.0   13.0\nmean   520.4  42.7   50.5\nstd     30.7   6.2    4.4\nmin    472.1  34.6   43.2\n25%    499.6  37.8   48.0\n50%    518.1  40.6   48.3\n75%    537.8  48.1   54.0\nmax    581.9  55.3   58.8\n\nRaasdorf_2024\n         K40  U238  Th232\ncount   19.0  19.0   19.0\nmean   468.5  39.3   38.5\nstd     26.7   3.2    2.1\nmin    403.5  29.3   33.7\n25%    456.1  38.3   37.4\n50%    470.6  39.3   38.6\n75%    483.6  41.5   39.9\nmax    539.2  43.4   42.1\n\nRaasdorf_2026\n          K40    U238   Th232\ncount  1678.0  1678.0  1678.0\nmean    486.3    45.7    42.3\nstd     192.0    26.8    20.7\nmin       5.8     0.1     0.1\n25%     349.3    25.0    27.0\n50%     473.1    42.7    42.2\n75%     603.8    64.2    56.9\nmax    1145.5   144.0   103.8\n\n\n\nThe same for soil texture, which only HOAL and Raasdorf_2024 have:\n\nfor name in [\"HOAL\", \"Raasdorf_2024\"]:\n    print(name)\n    print(tables[name][texture].describe().round(1))\n    print()\n\nHOAL\n       Clay  Silt  Sand\ncount  13.0  13.0  13.0\nmean   32.7  60.3   6.9\nstd     7.6   7.5   0.8\nmin    20.3  50.6   5.9\n25%    26.5  54.7   6.4\n50%    34.7  57.5   6.6\n75%    38.6  66.7   7.7\nmax    41.2  73.1   8.2\n\nRaasdorf_2024\n       Clay  Silt  Sand\ncount  19.0  19.0  19.0\nmean    8.5  62.3  29.2\nstd     2.3   3.7   3.4\nmin     4.4  57.2  23.8\n25%     6.6  59.4  26.5\n50%     9.1  61.6  28.7\n75%    10.0  64.6  32.3\nmax    12.1  69.1  35.0\n\n\n\nSand, silt and clay are parts of one whole, so they should add up to 100%. A quick check, along with any missing values:\n\nfor name in [\"HOAL\", \"Raasdorf_2024\"]:\n    table = tables[name]\n    table[texture] = table[texture].apply(pd.to_numeric, errors=\"coerce\")\n    totals = table[texture].sum(axis=1)\n    print(f\"{name}: sand + silt + clay ranges from {totals.min():.1f} to {totals.max():.1f}\")\n    print(f\"{name}: missing values in texture and isotopes: {table[texture + isotopes].isna().sum().sum()}\")\n\nHOAL: sand + silt + clay ranges from 100.0 to 100.1\nHOAL: missing values in texture and isotopes: 0\nRaasdorf_2024: sand + silt + clay ranges from 99.9 to 100.1\nRaasdorf_2024: missing values in texture and isotopes: 0",
+    "crumbs": [
+      "Projects",
+      "Exploratory Data Analysis"
+    ]
+  },
+  {
+    "objectID": "2-Exploratory-data-analysis.html#histograms",
+    "href": "2-Exploratory-data-analysis.html#histograms",
+    "title": "Exploratory data analysis",
+    "section": "Histograms",
+    "text": "Histograms\n\nSoil texture: HOAL vs Raasdorf_2024\nThe two sites have different numbers of samples, so the histograms show density instead of counts. That way the bars are comparable.\n\nbins = np.arange(0, 101, 10)\n\nfig, axes = plt.subplots(1, 3, figsize=(12, 3.5))\nfor ax, col in zip(axes, texture):\n    ax.hist(hoal[col], bins=bins, density=True, alpha=0.6, label=\"HOAL\")\n    ax.hist(raasdorf_2024[col], bins=bins, density=True, alpha=0.6, label=\"Raasdorf_2024\")\n    ax.set_xlabel(f\"{col} (%)\")\naxes[0].set_ylabel(\"Density\")\naxes[0].legend()\nplt.tight_layout()\nplt.show()\n\n\n\n\n\n\n\n\nWith only a handful of samples per site, treat these shapes as a rough guide.\n\n\nGamma-ray values: all three datasets\nThe grey band marks the range of HOAL, where the model is fitted. Raasdorf values outside the band mean the model would have to extrapolate.\n\nfig, axes = plt.subplots(1, 3, figsize=(12, 3.5))\n\nfor ax, iso in zip(axes, isotopes):\n    for name, table in tables.items():\n        if name == \"Raasdorf_2026\":\n            continue\n        ax.hist(table[iso].dropna(), bins=\"auto\", alpha=0.5, label=name)\n\n    ax.set_xlabel(f\"{iso} (Bq/kg)\")\n\naxes[0].set_ylabel(\"Count\")\naxes[0].legend(fontsize=8)\nplt.tight_layout()\nplt.show()\n\n\n\n\n\n\n\n\nThe same thing in numbers: the share of Raasdorf values that fall outside the HOAL range.\n\nrows = []\nfor iso in isotopes:\n    hoal_vals = hoal[iso].dropna()\n    low, high = hoal_vals.min(), hoal_vals.max()\n\n    for name in [\"Raasdorf_2024\"]:\n        values = tables[name][iso].dropna()\n        outside = ((values &lt; low) | (values &gt; high)).mean() * 100\n        rows.append({\n            \"isotope\": iso,\n            \"HOAL range\": f\"{low:.1f} to {high:.1f}\",\n            \"Raasdorf 2024 range\": f\"{values.min():.1f} to {values.max():.1f}\",\n            \"% outside\": round(outside, 1),\n            \"n\": len(values),\n        })\n\ndf = pd.DataFrame(rows)\ndf\n\n\n\n\n\n\n\n\nisotope\nHOAL range\nRaasdorf 2024 range\n% outside\nn\n\n\n\n\n0\nK40\n472.1 to 581.9\n403.5 to 539.2\n52.6\n19\n\n\n1\nU238\n34.6 to 55.3\n29.3 to 43.4\n5.3\n19\n\n\n2\nTh232\n43.2 to 58.8\n33.7 to 42.1\n100.0\n19",
+    "crumbs": [
+      "Projects",
+      "Exploratory Data Analysis"
+    ]
+  },
+  {
+    "objectID": "2-Exploratory-data-analysis.html#correlation",
+    "href": "2-Exploratory-data-analysis.html#correlation",
+    "title": "Exploratory data analysis",
+    "section": "Correlation",
+    "text": "Correlation\nA correlation matrix shows, in one picture, which columns move together. We draw it for HOAL and for Raasdorf_2024 side by side, because a transfer model only makes sense if the isotopes relate to texture in the same direction at both sites.\n\ndef heatmap(ax, table, title):\n    cols = texture + isotopes\n    corr = table[cols].corr()\n\n    image = ax.imshow(corr, cmap=\"RdBu\", vmin=-1, vmax=1)\n    ax.set_xticks(range(len(cols)), cols, rotation=45, ha=\"right\")\n    ax.set_yticks(range(len(cols)), cols)\n    ax.tick_params(length=0)\n    ax.grid(False)\n\n    for i, j in np.ndindex(corr.shape):\n        value = corr.iloc[i, j]\n        color = \"white\" if abs(value) &gt; 0.5 else \"black\"\n        ax.text(j, i, f\"{value:.2f}\", ha=\"center\", va=\"center\", color=color, fontsize=8)\n\n    ax.set_title(title)\n    return image\n\nfig, axes = plt.subplots(\n    1, 3,\n    figsize=(13, 5),\n    gridspec_kw={\"width_ratios\": [1, 0.05, 1]},\n)\nheatmap(axes[0], hoal, f\"HOAL (n={len(hoal)})\")\nimage = heatmap(axes[2], raasdorf_2024, f\"Raasdorf_2024 (n={len(raasdorf_2024)})\")\nfig.colorbar(image, cax=axes[1])\nplt.show()\n\n\n\n\n\n\n\n\nTwo things to look for. First, whether the signs of the isotope-texture correlations (K40, U238 and Th232 against clay, silt and sand) match between the panels. Second, how strongly the three isotopes correlate with each other, because two predictors that track each other carry the same information twice.\nHOAL (n = 13). Clay and silt are almost perfectly opposed (r = −0.99), so sand barely varies and the two carry the same signal. Both relate strongly to U238 (clay −0.89, silt +0.89), and clay also to Th232 (−0.71).\nRaasdorf_2024 (n = 19). Clay and silt are only weakly opposed (r = −0.44), so sand varies independently. The isotope-texture correlations are weak: clay and U238 are +0.41, against −0.89 at HOAL, and sand and K40 are −0.52, against +0.17 at HOAL.\nThe relationships seen at HOAL do not appear at Raasdorf. A model fitted on HOAL should therefore not be expected to transfer without adjustment.",
+    "crumbs": [
+      "Projects",
+      "Exploratory Data Analysis"
+    ]
+  },
+  {
+    "objectID": "2-Exploratory-data-analysis.html#where-the-points-are",
+    "href": "2-Exploratory-data-analysis.html#where-the-points-are",
+    "title": "Exploratory data analysis",
+    "section": "Where the points are",
+    "text": "Where the points are\nThe Raasdorf_2024 table has a position for each point. We check that no two points share the same coordinates:\n\nduplicates = raasdorf_2024.duplicated(subset=[\"Longitude\", \"Latitude\"]).sum()\nprint(f\"Raasdorf_2024 points sharing exact coordinates with another point: {duplicates}\")\n\nRaasdorf_2024 points sharing exact coordinates with another point: 3\n\n\nAnd we plot the 2026 survey, with the rows dropped for zeros in red, so you can see whether the dropped rows are scattered evenly or concentrated in one area. The Raasdorf_2024 points are shown as triangles.\n\ndropped = survey_all.drop(raasdorf_2026.index)\n\nfig, ax = plt.subplots(figsize=(7, 6))\nax.scatter(raasdorf_2026[\"Longitude_GPS\"], raasdorf_2026[\"Latitude_GPS\"],\n           s=6, color=\"gray\", label=\"Survey, kept\")\nax.scatter(dropped[\"Longitude_GPS\"], dropped[\"Latitude_GPS\"],\n           s=6, color=\"crimson\", label=\"Survey, dropped (zeros)\")\nax.scatter(raasdorf_2024[\"Longitude\"], raasdorf_2024[\"Latitude\"],\n           marker=\"^\", s=40, color=\"black\", label=\"Raasdorf_2024 points\")\nax.set_aspect(1 / np.cos(np.radians(survey_all[\"Latitude_GPS\"].mean())))\nax.set_xlabel(\"Longitude\")\nax.set_ylabel(\"Latitude\")\nax.legend(fontsize=8)\nplt.show()",
+    "crumbs": [
+      "Projects",
+      "Exploratory Data Analysis"
+    ]
+  },
+  {
+    "objectID": "2-Exploratory-data-analysis.html#before-moving-on",
+    "href": "2-Exploratory-data-analysis.html#before-moving-on",
+    "title": "Exploratory data analysis",
+    "section": "Before moving on",
+    "text": "Before moving on\nThe plots above should answer three questions: do the textures overlap, are the Raasdorf isotope values inside the HOAL range, and do the isotopes and texture move together in the same direction at both sites. If the answer to any of them is “not really”, that is a limit on what a transfer model can do, and we carry it into the modelling pages.",
+    "crumbs": [
+      "Projects",
+      "Exploratory Data Analysis"
+    ]
+  },
+  {
+    "objectID": "2-Exploratory-data-analysis.html#references",
+    "href": "2-Exploratory-data-analysis.html#references",
+    "title": "Exploratory data analysis",
+    "section": "References",
+    "text": "References",
+    "crumbs": [
+      "Projects",
+      "Exploratory Data Analysis"
+    ]
+  }
+]
