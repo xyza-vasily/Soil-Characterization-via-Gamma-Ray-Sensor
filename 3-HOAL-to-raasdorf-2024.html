@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Xyza Vasily Dela Pena">
-<meta name="dcterms.date" content="2026-10-15">
+<meta name="dcterms.date" content="2026-10-22">
 
 <title>A: HOAL to Raasdorf_2024 – Gamma ray sensor</title>
 <style>
@@ -214,7 +214,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#set-up" id="toc-set-up" class="nav-link active" data-scroll-target="#set-up">Set up</a></li>
+  <li><a href="#site-of-the-study" id="toc-site-of-the-study" class="nav-link active" data-scroll-target="#site-of-the-study">Site of the study</a></li>
+  <li><a href="#set-up" id="toc-set-up" class="nav-link" data-scroll-target="#set-up">Set up</a></li>
   <li><a href="#fit-the-hoal-models" id="toc-fit-the-hoal-models" class="nav-link" data-scroll-target="#fit-the-hoal-models">Fit the HOAL models</a></li>
   <li><a href="#choose-the-predictor" id="toc-choose-the-predictor" class="nav-link" data-scroll-target="#choose-the-predictor">Choose the predictor</a></li>
   <li><a href="#check-the-chosen-model" id="toc-check-the-chosen-model" class="nav-link" data-scroll-target="#check-the-chosen-model">Check the chosen model</a></li>
@@ -248,7 +249,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">October 15, 2026</p>
+      <p class="date">October 22, 2026</p>
     </div>
   </div>
   
@@ -261,6 +262,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <p>This section asks one question: <strong>can a model built at HOAL predict soil texture at Raasdorf?</strong></p>
+<section id="site-of-the-study" class="level2">
+<h2 class="anchored" data-anchor-id="site-of-the-study">Site of the study</h2>
+<div id="fig-site" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-site-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/site1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-site-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Site study and sampling points.
+</figcaption>
+</figure>
+</div>
 <p>The plan has five steps:</p>
 <ol type="1">
 <li>Fit a straight line between each gamma-ray predictor and each texture class at HOAL.</li>
@@ -269,9 +282,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li>Check that the two sites overlap in texture.</li>
 <li>Apply the line to the Raasdorf_2024 points, without changing anything, and compare the predictions with the lab values.</li>
 </ol>
+</section>
 <section id="set-up" class="level2">
 <h2 class="anchored" data-anchor-id="set-up">Set up</h2>
-<div id="75c88401" class="cell" data-execution_count="1">
+<div id="7a8df75f" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
@@ -286,7 +300,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="fit-the-hoal-models" class="level2">
 <h2 class="anchored" data-anchor-id="fit-the-hoal-models">Fit the HOAL models</h2>
 <p>For every texture class and every predictor, we fit a straight line. The table gives the slope and intercept of each line, its R² (the share of the variation in texture that the line explains) and its p-value.</p>
-<div id="f2c50e2a" class="cell" data-execution_count="2">
+<div id="a7c77b4b" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>predictors <span class="op">=</span> [<span class="st">"K40"</span>, <span class="st">"U238"</span>, <span class="st">"Th232"</span>, <span class="st">"Ratio"</span>]</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>targets <span class="op">=</span> [<span class="st">"Clay"</span>, <span class="st">"Silt"</span>, <span class="st">"Sand"</span>]</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -437,7 +451,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>The same lines, drawn on the data:</p>
-<div id="6a3c8db6" class="cell" data-execution_count="3">
+<div id="b6949fe3" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">len</span>(targets), <span class="bu">len</span>(predictors),</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    figsize<span class="op">=</span>(<span class="dv">4</span> <span class="op">*</span> <span class="bu">len</span>(predictors), <span class="dv">4</span> <span class="op">*</span> <span class="bu">len</span>(targets)),</span>
@@ -483,7 +497,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>Low error at HOAL.</strong> We use leave-one-out RMSE. Each HOAL sample is left out in turn, the line is fitted on the other 12, and that line predicts the sample that was left out. The RMSE of those predictions is an honest estimate of the error on a new sample.</li>
 <li><strong>Raasdorf stays inside HOAL’s range.</strong> We count how many Raasdorf_2024 isotope values fall outside the range HOAL was measured on. This uses the isotope values only, not the texture. A model has to extrapolate outside that range.</li>
 </ol>
-<div id="70c32596" class="cell" data-execution_count="4">
+<div id="6fd5ce07" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> loo_rmse(x, y):</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    errors <span class="op">=</span> []</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(x)):</span>
@@ -618,7 +632,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="check-the-chosen-model" class="level2">
 <h2 class="anchored" data-anchor-id="check-the-chosen-model">Check the chosen model</h2>
 <p>Before using the lines, we check how they miss. A residual is the observed value minus the fitted value. If the line is a good description, the residuals scatter around zero with no curve and no funnel shape.</p>
-<div id="dceff558" class="cell" data-execution_count="5">
+<div id="68ba8b00" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> target <span class="kw">in</span> [<span class="st">"Clay"</span>, <span class="st">"Silt"</span>]:</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    fit <span class="op">=</span> stats.linregress(hoal[<span class="st">"U238"</span>], hoal[target])</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    hoal[<span class="ss">f"</span><span class="sc">{</span>target<span class="sc">}</span><span class="ss">_fitted"</span>] <span class="op">=</span> fit.intercept <span class="op">+</span> fit.slope <span class="op">*</span> hoal[<span class="st">"U238"</span>]</span>
@@ -654,7 +668,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>The residuals scatter around zero with no clear curve, so a straight line is a reasonable description at this sample size. Silt spreads out more at higher fitted values than at lower ones.</p>
 <p>The four samples with the largest residuals:</p>
-<div id="da7f411b" class="cell" data-execution_count="6">
+<div id="e9753828" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>largest <span class="op">=</span> hoal[<span class="st">"Clay_residual"</span>].<span class="bu">abs</span>().nlargest(<span class="dv">4</span>).index</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>hoal.loc[largest, [<span class="st">"Sample"</span>, <span class="st">"U238"</span>, <span class="st">"Clay"</span>, <span class="st">"Clay_residual"</span>, <span class="st">"Silt"</span>, <span class="st">"Silt_residual"</span>]].<span class="bu">round</span>(<span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="17">
@@ -721,7 +735,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="check-that-the-two-sites-overlap-in-texture" class="level2">
 <h2 class="anchored" data-anchor-id="check-that-the-two-sites-overlap-in-texture">Check that the two sites overlap in texture</h2>
 <p>The isotope check above is not enough. The textures must overlap too, or the model has to predict values it never saw.</p>
-<div id="15f0fc64" class="cell" data-execution_count="7">
+<div id="362d8a2a" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> target <span class="kw">in</span> [<span class="st">"Clay"</span>, <span class="st">"Silt"</span>, <span class="st">"Sand"</span>]:</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    low, high <span class="op">=</span> hoal[target].<span class="bu">min</span>(), hoal[target].<span class="bu">max</span>()</span>
@@ -786,7 +800,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>baseline RMSE</strong>: the error we would get by always predicting the HOAL mean texture, with no model. A useful model has to beat it.</li>
 <li><strong>R2 transfer</strong>: how much better the model is than predicting the Raasdorf mean. It can be negative, which means the model does worse than that.</li>
 </ul>
-<div id="7483cad1" class="cell" data-execution_count="8">
+<div id="8b99ac4e" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>chosen <span class="op">=</span> {<span class="st">"Clay"</span>: <span class="st">"U238"</span>, <span class="st">"Silt"</span>: <span class="st">"U238"</span>}</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
@@ -855,7 +869,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
-<div id="4295b7c5" class="cell" data-execution_count="9">
+<div id="280360b2" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>observed <span class="op">=</span> raasdorf_2024[target]</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> predicted <span class="op">-</span> observed</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -866,7 +880,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>The baseline is what we would get by always predicting the HOAL mean texture, so the model is only useful if its RMSE is below it.</p>
 <p>We use <code>U238</code> because it had the lowest error at HOAL and the best overlap with the new site’s values (see “Choose the predictor”). To try another site or predictor, only the tables and the <code>chosen</code> line change.</p>
-<div id="db448aab" class="cell" data-execution_count="10">
+<div id="3a5f32aa" class="cell" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">9</span>, <span class="fl">4.5</span>))</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, target <span class="kw">in</span> <span class="bu">zip</span>(axes, chosen):</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    observed <span class="op">=</span> raasdorf_2024[target]</span>
@@ -916,7 +930,7 @@ Warning
 </ul>
 </div>
 </div>
-<div id="bb1fa813" class="cell" data-execution_count="11">
+<div id="fd0f7db9" class="cell" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> target <span class="kw">in</span> [<span class="st">"Clay"</span>, <span class="st">"Silt"</span>]:</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    predicted <span class="op">=</span> predictions[target].to_numpy()</span>

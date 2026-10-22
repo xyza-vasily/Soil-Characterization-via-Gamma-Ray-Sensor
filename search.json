@@ -11,6 +11,17 @@
     ]
   },
   {
+    "objectID": "3b-recalibrating-the-intercept.html#site-of-the-study",
+    "href": "3b-recalibrating-the-intercept.html#site-of-the-study",
+    "title": "A2: Recalibrating the intercept",
+    "section": "Site of the study",
+    "text": "Site of the study\n\n\n\n\n\n\nFigure 1: Site study and sampling points",
+    "crumbs": [
+      "Projects",
+      "Recalibrating the Intercept"
+    ]
+  },
+  {
     "objectID": "3b-recalibrating-the-intercept.html#set-up",
     "href": "3b-recalibrating-the-intercept.html#set-up",
     "title": "A2: Recalibrating the intercept",
@@ -506,7 +517,18 @@
     "href": "3-HOAL-to-raasdorf-2024.html",
     "title": "A: HOAL to Raasdorf_2024",
     "section": "",
-    "text": "This section asks one question: can a model built at HOAL predict soil texture at Raasdorf?\nThe plan has five steps:",
+    "text": "This section asks one question: can a model built at HOAL predict soil texture at Raasdorf?",
+    "crumbs": [
+      "Projects",
+      "HOAL to Raasdorf 2024"
+    ]
+  },
+  {
+    "objectID": "3-HOAL-to-raasdorf-2024.html#site-of-the-study",
+    "href": "3-HOAL-to-raasdorf-2024.html#site-of-the-study",
+    "title": "A: HOAL to Raasdorf_2024",
+    "section": "Site of the study",
+    "text": "Site of the study\n\n\n\n\n\n\nFigure 1: Site study and sampling points.\n\n\n\nThe plan has five steps:\n\nFit a straight line between each gamma-ray predictor and each texture class at HOAL.\nChoose the best predictor, using HOAL only.\nCheck that the chosen line fits HOAL well enough to trust.\nCheck that the two sites overlap in texture.\nApply the line to the Raasdorf_2024 points, without changing anything, and compare the predictions with the lab values.",
     "crumbs": [
       "Projects",
       "HOAL to Raasdorf 2024"

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Xyza Vasily Dela Pena">
-<meta name="dcterms.date" content="2026-10-15">
+<meta name="dcterms.date" content="2026-10-22">
 
 <title>A2: Recalibrating the intercept – Gamma ray sensor</title>
 <style>
@@ -233,7 +233,8 @@ div.csl-indent {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#set-up" id="toc-set-up" class="nav-link active" data-scroll-target="#set-up">Set up</a></li>
+  <li><a href="#site-of-the-study" id="toc-site-of-the-study" class="nav-link active" data-scroll-target="#site-of-the-study">Site of the study</a></li>
+  <li><a href="#set-up" id="toc-set-up" class="nav-link" data-scroll-target="#set-up">Set up</a></li>
   <li><a href="#step-1-the-straight-transfer" id="toc-step-1-the-straight-transfer" class="nav-link" data-scroll-target="#step-1-the-straight-transfer">Step 1: the straight transfer</a></li>
   <li><a href="#step-2-what-the-shift-does" id="toc-step-2-what-the-shift-does" class="nav-link" data-scroll-target="#step-2-what-the-shift-does">Step 2: what the shift does</a></li>
   <li><a href="#step-3-the-honest-test" id="toc-step-3-the-honest-test" class="nav-link" data-scroll-target="#step-3-the-honest-test">Step 3: the honest test</a></li>
@@ -266,7 +267,7 @@ div.csl-indent {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">October 15, 2026</p>
+      <p class="date">October 22, 2026</p>
     </div>
   </div>
   
@@ -291,9 +292,22 @@ b_new  = the HOAL intercept + the average of (observed − predicted) at Raasdor
 <li>Test the shift honestly, on samples that were not used to set it.</li>
 <li>Write down the recalibrated equation.</li>
 </ol>
+<section id="site-of-the-study" class="level2">
+<h2 class="anchored" data-anchor-id="site-of-the-study">Site of the study</h2>
+<div id="fig-site" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-site-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/Site1.svg" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:80.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-site-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Site study and sampling points
+</figcaption>
+</figure>
+</div>
+</section>
 <section id="set-up" class="level2">
 <h2 class="anchored" data-anchor-id="set-up">Set up</h2>
-<div id="53fe25f2" class="cell" data-execution_count="1">
+<div id="cfd6c1be" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
@@ -308,7 +322,7 @@ b_new  = the HOAL intercept + the average of (observed − predicted) at Raasdor
 <section id="step-1-the-straight-transfer" class="level2">
 <h2 class="anchored" data-anchor-id="step-1-the-straight-transfer">Step 1: the straight transfer</h2>
 <p>We apply the HOAL line for clay and silt, using <code>U238</code>, to the Raasdorf_2024 points. Nothing is refitted.</p>
-<div id="b2d127c9" class="cell" data-execution_count="2">
+<div id="141399cd" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>chosen <span class="op">=</span> {<span class="st">"Clay"</span>: <span class="st">"U238"</span>, <span class="st">"Silt"</span>: <span class="st">"U238"</span>}</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>hoal_fits <span class="op">=</span> {}</span>
@@ -324,7 +338,7 @@ b_new  = the HOAL intercept + the average of (observed − predicted) at Raasdor
 <li><strong>spread</strong>: how much the errors differ from one another around that average.</li>
 </ul>
 <p>The RMSE combines the two: <code>RMSE² = bias² + spread²</code>.</p>
-<div id="ebafef9d" class="cell" data-execution_count="3">
+<div id="0435e29c" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> target <span class="kw">in</span> chosen:</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    error <span class="op">=</span> predictions[target] <span class="op">-</span> raasdorf_2024[target]</span>
@@ -376,7 +390,7 @@ b_new  = the HOAL intercept + the average of (observed − predicted) at Raasdor
 <h2 class="anchored" data-anchor-id="step-2-what-the-shift-does">Step 2: what the shift does</h2>
 <p>Every dot below is one Raasdorf sample, placed at its error for clay. Zero means a perfect prediction.</p>
 <p>The top panel is the straight transfer. The dots sit far from zero, which is the bias, and they are spread over a width, which is the spread. The bottom panel is the same dots after the intercept shift: every prediction is moved by the same amount, so the whole group slides onto zero.</p>
-<div id="c1bea3fb" class="cell" data-execution_count="4">
+<div id="5a787cd0" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> <span class="st">"Clay"</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> predictions[target] <span class="op">-</span> raasdorf_2024[target]</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>shifted <span class="op">=</span> error <span class="op">-</span> error.mean()</span>
@@ -459,7 +473,7 @@ b_new  = the HOAL intercept + the average of (observed − predicted) at Raasdor
 <li><strong>RMSE local mean, leave-one-out</strong>: the error from ignoring HOAL altogether and predicting the average Raasdorf texture. This is the benchmark the recalibrated line has to beat.</li>
 <li><strong>slope of observed on predicted</strong>: does the HOAL line point the right way at Raasdorf? A value near 1 means the line has the right shape and only its level was off. A value near 0 or negative means the HOAL relationship does not hold at Raasdorf.</li>
 </ul>
-<div id="db9cef1b" class="cell" data-execution_count="5">
+<div id="b25c62a9" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> []</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> target <span class="kw">in</span> chosen:</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    predicted <span class="op">=</span> predictions[target].to_numpy()</span>
@@ -538,7 +552,7 @@ b_new  = the HOAL intercept + the average of (observed − predicted) at Raasdor
 <section id="step-4-the-recalibrated-equation" class="level2">
 <h2 class="anchored" data-anchor-id="step-4-the-recalibrated-equation">Step 4: the recalibrated equation</h2>
 <p>This is the equation you would report. It uses all 19 Raasdorf samples to set the shift. Its expected error is the leave-one-out number from step 3, not the “same points” number.</p>
-<div id="f5874ffc" class="cell" data-execution_count="6">
+<div id="d7dd4add" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> target, predictor <span class="kw">in</span> chosen.items():</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    fit <span class="op">=</span> hoal_fits[target]</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    shift <span class="op">=</span> (raasdorf_2024[target] <span class="op">-</span> predictions[target]).mean()</span>
