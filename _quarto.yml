@@ -6,6 +6,7 @@ project:
     - 1-Loading-gamma-ray-and-soil-data.qmd
     - 2-Exploratory-data-analysis.qmd
     - 3-HOAL-to-raasdorf-2024.qmd 
+    - 3b-recalibrating-the-intercept.qmd
 
 website:
   title: "Gamma ray sensor"
@@ -35,6 +36,9 @@ website:
             href: 2-Exploratory-data-analysis.qmd
           - text: "HOAL to Raasdorf 2024"
             href: 3-HOAL-to-raasdorf-2024.qmd
+          - text: "Recalibrating the Intercept"
+            href: 3b-recalibrating-the-intercept.qmd
+
 
 bibliography: references.bib
 

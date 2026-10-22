@@ -7,6 +7,10 @@ date: last-modified
 
 This section asks one question: **can a model built at HOAL predict soil texture at Raasdorf?**
 
+## Site of the study
+
+![Site study and sampling points.](images/site1.svg){#fig-site width=80% fig-align="center"}
+
 The plan has five steps:
 
 1. Fit a straight line between each gamma-ray predictor and each texture class at HOAL.
