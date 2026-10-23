@@ -65,3 +65,9 @@ Rplots.pdf
 venv/
 __pycache__/
 *.pyc
+
+# Ignore raw data files and folders
+data/
+*.csv
+*.xlsx
+*.json
